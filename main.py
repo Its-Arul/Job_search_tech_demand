@@ -5,19 +5,37 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
+import tkinter as tk
+from tkinter import simpledialog
 
+ROOT = tk.Tk()
+ROOT.withdraw()
 
 edge_driver_path = "C:\Development\msedgedriver.exe"
 
-website = "https://www.naukri.com/firmware-engineer-jobs"
 tech_demand = []
 
 service = Service(executable_path=edge_driver_path)
 driver = webdriver.Edge(service=service)
+search_page_no = 1
+
+
+def get_user_input():
+    global search_page_no
+    website_data = ""
+    user_job = simpledialog.askstring(title="Tech_demand", prompt="Search the job:")
+    experience = simpledialog.askstring(title="Tech_demand", prompt="Years of experience")
+    search_page_no = int(simpledialog.askstring(title="Tech_demand", prompt="Number of pages to search"))
+    split_job_name = user_job.split()
+    for split in split_job_name:
+        website_data += f"{split}-"
+    website_data = f"{website_data}-jobs"
+    website_data += f"?experience={experience}"
+    print(website_data)
+    return website_data
 
 
 def extract_jobs(page_no):
-
     driver.get(f"{website}-{page_no}")
     driver.maximize_window()  # For maximizing window:
     ignored_exceptions = (NoSuchElementException, StaleElementReferenceException,)
@@ -49,15 +67,16 @@ def extract_technology_from_job(page_number):
             print(each_job.text)
             tech_demand.append(each_job.text)
 
-#----------------------------------------------START----------------------------------------------------------------#
 
+# ----------------------------------------------START----------------------------------------------------------------#
+
+website = f"https://www.naukri.com/{get_user_input()}"
 
 # Loop through each page
-for n in range(1, 30):
+for n in range(1, search_page_no):
     extract_technology_from_job(page_number=n)
 
-
-#-------------------------------------ENHANCING DATA ----------------------------------------------------------------#
+# -------------------------------------ENHANCING DATA ----------------------------------------------------------------#
 tech_demand_split = []
 tech_demand_final = []
 
@@ -81,7 +100,8 @@ for n in tech_demand_final:
 sorted_dict = {}
 for w in sorted(res, key=res.get, reverse=True):
     sorted_dict[w] = res[w]
+    print(w, res[w])
 
 print(sorted_dict)
 
-#-------------------------------------------FINISH------------------------------------------------------------------#
+# -------------------------------------------FINISH------------------------------------------------------------------#
